@@ -1,0 +1,26 @@
+node_modules/
+.pnpm-store/
+dist/
+build/
+out/
+.next/
+coverage/
+*.tsbuildinfo
+
+.env
+.env.*
+!.env.example
+
+# Prisma generated client
+apps/api/src/generated/
+
+# Static export copied into the API service at build time
+apps/api/public/
+
+# Local logs / OS files
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.neon/

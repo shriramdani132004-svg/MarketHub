@@ -1,0 +1,52 @@
+{
+  "name": "markethub",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MarketHub — multi-vendor e-commerce platform",
+  "packageManager": "pnpm@10.34.9",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev:api": "pnpm --filter @markethub/api dev",
+    "dev:web": "pnpm --filter @markethub/web dev",
+    "build": "pnpm prisma:generate && pnpm build:web && pnpm build:api && pnpm copy:web",
+    "build:web": "pnpm --filter @markethub/web build",
+    "build:api": "pnpm --filter @markethub/api build",
+    "copy:web": "node scripts/copy-web.mjs",
+    "start": "node scripts/render-start.mjs",
+    "start:api": "node apps/api/dist/main.js",
+    "lint": "pnpm -r --if-present lint",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "pnpm --filter @markethub/api test",
+    "test:e2e": "pnpm --filter @markethub/api test:e2e",
+    "prisma:generate": "prisma generate",
+    "prisma:validate": "prisma validate",
+    "prisma:migrate:dev": "prisma migrate dev",
+    "prisma:migrate:deploy": "prisma migrate deploy",
+    "prisma:seed": "prisma db seed",
+    "db:deploy": "node scripts/migrate.mjs",
+    "admin:bootstrap": "node scripts/bootstrap-admin.mjs"
+  },
+  "devDependencies": {
+    "dotenv": "16.6.1",
+    "prisma": "7.10.1",
+    "tsx": "4.20.6",
+    "typescript": "5.9.3"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "prisma",
+      "esbuild",
+      "argon2",
+      "@nestjs/core",
+      "unrs-resolver",
+      "sharp"
+    ]
+  }
+}

@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Lint, typecheck, unit tests, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.34.9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm prisma:generate
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+  integration:
+    name: Database integration and end-to-end tests
+    runs-on: ubuntu-latest
+    # DB-backed suites only run when a dedicated test database is configured.
+    if: ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.34.9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm prisma:generate
+
+      - name: Check for a test database secret
+        id: db
+        env:
+          TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+        run: |
+          if [ -n "$TEST_DATABASE_URL" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "TEST_DATABASE_URL is not configured; skipping database suites."
+          fi
+
+      - name: Apply migrations to the test database
+        if: steps.db.outputs.available == 'true'
+        env:
+          DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.TEST_DIRECT_URL }}
+        run: pnpm prisma:migrate:deploy
+
+      - name: Integration and end-to-end tests
+        if: steps.db.outputs.available == 'true'
+        env:
+          TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+          TEST_DIRECT_URL: ${{ secrets.TEST_DIRECT_URL }}
+        run: pnpm test:e2e

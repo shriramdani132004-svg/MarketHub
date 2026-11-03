@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: markethub
+    runtime: node
+    plan: free
+    region: oregon
+    branch: main
+    autoDeploy: true
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm build
+    startCommand: node scripts/render-start.mjs
+    healthCheckPath: /api/v1/health/ready
+    envVars:
+      - key: NODE_VERSION
+        value: 22.20.0
+      - key: NODE_ENV
+        value: production
+      # Neon pooled connection (runtime queries).
+      - key: DATABASE_URL
+        sync: false
+      # Neon direct connection (Prisma migrations at deploy time).
+      - key: DIRECT_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: JWT_ACCESS_TTL
+        value: "900"
+      - key: JWT_REFRESH_TTL
+        value: "604800"
+      # Same-origin deployment: relative /api/v1 requests send cookies.
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: COOKIE_SAME_SITE
+        value: lax
+      - key: RESERVATION_TTL_MINUTES
+        value: "15"
+      # FRONTEND_ORIGIN is derived from RENDER_EXTERNAL_URL at startup.
