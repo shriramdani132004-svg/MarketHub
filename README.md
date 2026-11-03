@@ -4,6 +4,8 @@ A production-quality multi-vendor e-commerce platform: a Next.js storefront, sel
 
 MarketHub demonstrates a complete commerce lifecycle — customer registration, seller onboarding and approval, catalogue management, cart, multi-vendor checkout with per-seller order splitting, transactional stock reservation, simulated payments, fulfilment, refunds and analytics — with security and consistency controls that are exercised by automated tests.
 
+**Live demo:** <https://markethub-535y.onrender.com> — deployed on Render's free tier, so the first request after idle may take a few seconds. Payments are simulated.
+
 > **Payments are simulated.** No card data is collected and no real money is charged. All revenue figures are labelled as simulated demo data.
 
 ## Highlights
